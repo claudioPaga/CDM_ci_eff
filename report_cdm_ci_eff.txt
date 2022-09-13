@@ -5,5 +5,15 @@ The initial version of the CDM code is complex and slow.
 A possible improvement in speed and semplification can be achieved by treating the Charge Injection using effective densities, initialised before the X-ray events processing.
 Here I set up a project/repository/folder to develop a new version of the CDM with effective densities.
 
+- GITHub repository -
+Set up
+https://github.com/claudioPaga/CDM_ci_eff
+Initialise the repository in current folder
+/Users/cp232/SMILE/CDM_ci_eff
+
+First push to repository
+git remote add origin https://github.com/claudioPaga/CDM_ci_eff.git
+git push -u origin main
+
 
 
