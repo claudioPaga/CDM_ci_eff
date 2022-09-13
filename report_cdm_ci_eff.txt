@@ -18,3 +18,22 @@ git push -u origin main
 Further updates of files
 git commit -m "Update report file" report_cdm_ci_eff.txt
 git status
+git push
+
+- SETUP FILES -
+The setup files at different Temperatures must be updated to allow the setting of effective densities.
+The effective densities are specific to the image/store/serial regions and are a function of position DETY in image/store and of DETY and DETX in the serial register.
+
+Attempt at first version of updated setup file. Start with T=173K
+
+        setup_cdm_variables_eol173.pro
+
+Added the following pars:
+trap_ci_eff_image_flag  -> True if density must be updated with effective value because of CI
+trap_ci_eff_image_fixed -> True if updated value is expressed as a single value v. DETY
+trap_ci_eff_image_fraction -> Effective density fraction, if it can be expressed as a single value v. DETY
+trap_ci_eff_image_function -> True if effective density must be expressed as an expo function of DETY.
+                              In this case, the expo parameters must be read in from a look-up table.
+NOTE: the above also have versions for store and serial register
+trap_ci_eff_serial_detx -> True if effective density has a DETX dependence in the serial register
+
