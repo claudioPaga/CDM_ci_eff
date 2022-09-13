@@ -1,0 +1,9 @@
+CP, 13 Sept 2022
+
+- SUMMARY -
+The initial version of the CDM code is complex and slow.
+A possible improvement in speed and semplification can be achieved by treating the Charge Injection using effective densities, initialised before the X-ray events processing.
+Here I set up a project/repository/folder to develop a new version of the CDM with effective densities.
+
+
+
