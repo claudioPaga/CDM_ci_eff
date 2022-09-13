@@ -15,5 +15,6 @@ First push to repository
 git remote add origin https://github.com/claudioPaga/CDM_ci_eff.git
 git push -u origin main
 
-
-
+Further updates of files
+git commit -m "Update report file" report_cdm_ci_eff.txt
+git status
