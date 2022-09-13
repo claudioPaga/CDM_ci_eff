@@ -37,3 +37,5 @@ trap_ci_eff_image_function -> True if effective density must be expressed as an 
 NOTE: the above also have versions for store and serial register
 trap_ci_eff_serial_detx -> True if effective density has a DETX dependence in the serial register
 
+For now, setup file has been updated for T=173.
+Once this has been tested succesfully other temperatures will be updated.
