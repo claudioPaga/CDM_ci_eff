@@ -120,6 +120,11 @@ trap_ci_eff_image_function = [0, 1, 1, 0] ;t0, t3 are unaffected by CI because t
 trap_ci_eff_store_function = [1, 1, 1, 1]
 trap_ci_eff_serial_function = [1, 1, 1, 1]
 
+trap_ci_eff_image_function_coeff_name = table_density_eff_image_coeff.txt
+trap_ci_eff_store_function_coeff_name = table_density_eff_store_coeff.txt
+trap_ci_eff_serial_function_coeff_name = table_density_eff_serial_coeff.txt
+
+
 ; CI effective densities DETX flag. Indicate if the effective filling caused by CI need a special treatment as a function of DETY in the serial register.
 trap_ci_eff_serial_detx = [0, 1, 0, 0]
 
