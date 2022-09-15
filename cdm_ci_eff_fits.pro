@@ -1210,38 +1210,46 @@ end
 
 
 
-function effective_image_density_transform, image_density, trap_ci_eff_image_flag, trap_ci_eff_image_fixed, trap_ci_eff_image_fraction, trap_ci_eff_image_function, trap_expo_coeff_matrix, image_section_lines
+function effective_density_transform, density, trap_ci_eff_flag, trap_ci_eff_fixed, trap_ci_eff_fraction, trap_ci_eff_function, trap_expo_coeff_matrix, section_lines
 
-  image_density_eff =  dblarr(n_elements(image_density), image_section_lines)
+  density_eff =  dblarr(n_elements(density), section_lines)
   
-  for indexSpecies = 0, n_elements(image_density) do begin
+  for indexSpecies = 0, n_elements(density) do begin
      ;;; Fill the entire row with the density value for this specie
-     REPLICATE_INPLACE, image_density_eff, image_density[indexSpecies], 1, [0, indexSpecies]
-     if trap_ci_eff_image_flag[indexSpecies] eq 1 then begin
-        if trap_ci_eff_image_fixed[indexSpecies] eq 1 then begin
-           image_density_eff[indexSpecies] *= trap_ci_eff_image_fraction[indexSpecies]
+     REPLICATE_INPLACE, density_eff, density[indexSpecies], 1, [0, indexSpecies]
+     if trap_ci_eff_flag[indexSpecies] eq 1 then begin
+        if trap_ci_eff_fixed[indexSpecies] eq 1 then begin
+           density_eff[indexSpecies] *= trap_ci_eff_fraction[indexSpecies]
         endif else begin
            ;;; Select coeff for the specie
-           specie_id = trap_expo_coeff_matrix[0,*]
-           
+           specie_id = fix(trap_expo_coeff_matrix[0,*])
+
+           ;;; Calculate effective density based on expo function parameters.
            findSpecieIndex = where(specie_id eq indexSpecies)
-           y_start =  trap_expo_coeff_matrix[1, findSpecieIndex]
-           y_stop = trap_expo_coeff_matrix[2, findSpecieIndex]
+           y_start =  fix(trap_expo_coeff_matrix[1, findSpecieIndex])
+           y_stop = fix(trap_expo_coeff_matrix[2, findSpecieIndex])
            expoA = trap_expo_coeff_matrix[3, findSpecieIndex]
            expoB = trap_expo_coeff_matrix[4, findSpecieIndex]
            for segments = 0, n_elements(y_start)-1 do begin
               distance = y_stop[segments]-y_start[segments]
-              fraction_filled = (1.0 - exp(expoA[segments] + expoB[segment] * indgen(distance)))  
-              image_density_eff[indexSpecies, y_start[segments] : y_stop[segments]] = image_density_eff[indexSpecies, y_start[segments] : y_stop[segments]] * fraction_filled
+              if expoA[segments] gt 0 then function_empty = MAKE_ARRAY(distance, /INTEGER, VALUE = 1) else fraction_empty = 1.0 - exp(expoA[segments] + expoB[segment] * indgen(distance)) 
+              density_eff[indexSpecies, y_start[segments] : y_stop[segments]] = density_eff[indexSpecies, y_start[segments] : y_stop[segments]] * fraction_empty
            endfor
         endelse
      endif
   endfor
-  return, image_density_eff
+  return, density_eff
   
 end
   
+function read_expo_function_coeff, coeff_table_name
+  ;;; Reads in table with coefficients, save coeffs in array and return the array
 
+  readcol, coeff_table_name, tspecie, y_start, y_stop, expoA, expoB, format='(d, d, d, d, d)'
+  coeff_array = [transpose(tspecie), transpose(y_start), transpose(y_stop), transpose(expoA), transpose(expoB)]
+  
+  return, coeff_array
+end
 
 
 function get_unbinned_grade, phas
@@ -1407,6 +1415,35 @@ pro cdm_ci_eff_fits, fits_filename, key_release = key_release, key_plot = key_pl
   if charge_injection_flag then debug_filename_output = splitString[0]+'_CI'+strtrim(string(charge_injection_block_lines),2)+'_CDM_debug.txt' else debug_filename_output = splitString[0]+'_CDM_debug.txt'
   if keyword_set(DEBUG_FLAG) then openw, lu_debug, debug_filename_output, /get_lun , WIDTH=250 
 
+  
+  ;;; ****** CHARGE INJECTON TRAP DENSITIES EFFECT ***********
+  ;;; Adjust the traps density values for the effect of CI lines.
+  
+  ;;; Read in effective densities coefficients and adjust trap density values for the effects of CI
+  ;;; Check for the existence of the expo coeff file.
+  ;;; Adjust densities if found, otherwise set the coefficients to one, resulting in a fraction of empty traps equals to 1 in effective_image_density_transform()
+
+  if charge_injection_flag then begin
+
+     ;;; Adjust density along IMAGE
+     ima_coeff_file = file_search(trap_ci_eff_image_function_coeff_name, count)
+     if count eq 1 then begin
+        coeff_ima = read_expo_function_coeff(trap_ci_eff_image_function_coeff_name)
+     endif else coeff_ima = dblarr(trap_species_parallel, 5) + 1.0
+
+     trap_species_image_density = effective_density_transform(trap_species_image_density, trap_ci_eff_image_flag, trap_ci_eff_image_fixed, trap_ci_eff_image_fraction, trap_ci_eff_image_function, coeff_ima, image_section_lines)
+
+     ;;; Adjust density along STORE
+     store_coeff_file = file_search(trap_ci_eff_store_function_coeff_name, count)
+     if count eq 1 then begin
+        coeff_store = read_expo_function_coeff(trap_ci_eff_store_function_coeff_name)
+     endif else coeff_store = dblarr(trap_species_parallel, 5) + 1.0
+
+     trap_species_store_density = effective_density_transform(trap_species_store_density, trap_ci_eff_store_flag, trap_ci_eff_store_fixed, trap_ci_eff_store_fraction, trap_ci_eff_store_function, coeff_store, store_section_lines)
+
+     
+     
+  endif
   ;;; Read in fits file
   tab = mrdfits(fits_filename,1,hd1)
   tab0 = mrdfits(fits_filename,0,hd0)
