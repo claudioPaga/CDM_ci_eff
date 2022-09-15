@@ -1453,25 +1453,6 @@ pro cdm_ci_eff_fits, fits_filename, key_release = key_release, key_plot = key_pl
 
   start_processing = systime(/seconds)
   
-  ;;;  **************** CHARGE INJECTION TREATMENT  ************
-  ;;;
-  ;;; Evaluate the CI captured electrons and adjust the trap density accodingly.
-  ;;; 
-
-  if charge_injection_flag then begin
-     serial_binned_transfers = round((serial_columns/ccd_mode_binning)/readout_nodes) + overscan_cols  
-     ci_losses_pixel_species_image = chargeInjectionFillingNLines(charge_injection_electrons, charge_injection_block_lines, readout_image_time, trap_species_image_density, capture_cross_section_image, charge_volume_coeff_image)
-     ci_losses_pixel_species_storeA = chargeInjectionFillingNLines(charge_injection_electrons, charge_injection_block_lines, readout_store_time*ccd_mode_binning, trap_species_store_density, capture_cross_section_store, charge_volume_coeff_store)
-     ci_losses_pixel_species_storeB = chargeInjectionFillingNLines(charge_injection_electrons, charge_injection_block_lines, readout_serial_time*serial_binned_transfers, trap_species_store_density, capture_cross_section_store, charge_volume_coeff_store)
-
-     ; The effective density of traps is lowered by the captured electrons.
-     trap_species_image_density = trap_species_image_density-ci_losses_pixel_species_image
-     trap_species_storeA_density = trap_species_store_density-ci_losses_pixel_species_storeA
-     trap_species_storeB_density = trap_species_store_density-ci_losses_pixel_species_storeB
-  endif else begin
-    trap_species_storeA_density = trap_species_store_density
-    trap_species_storeB_density = trap_species_store_density
-  endelse
 
   ;;; Initialise arrays to store the 3x3 binned input and damaged pixels energies.
   list_energy_grid = dblarr(9, xraysTot)
